@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F9C0AA2C26FD429F9E05E6CD"
+               BlueprintIdentifier = "979FE72194B64783AB468F0E"
                BuildableName = "libPods-FTGNotificationControllerDemoTests-Kiwi.a"
                BlueprintName = "Pods-FTGNotificationControllerDemoTests-Kiwi"
                ReferencedContainer = "container:Pods.xcodeproj">

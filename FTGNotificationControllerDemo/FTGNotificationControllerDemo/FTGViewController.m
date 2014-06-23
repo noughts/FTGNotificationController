@@ -29,15 +29,28 @@
 {
     UIApplication *application = [UIApplication sharedApplication];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNotification:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+    [self.notificationController observeNotificationName:UIApplicationDidReceiveMemoryWarningNotification
+                                                  object:nil
+                                                   queue:[NSOperationQueue mainQueue]
+                                                   block:^(NSNotification *note, id observer)
+    {
+        NSLog(@"notification %@ observer %@", note, observer);
+    }];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNotification:) name:UIApplicationDidReceiveMemoryWarningNotification object:application];
+    [self.notificationController observeNotificationName:UIApplicationDidReceiveMemoryWarningNotification
+                                                  object:application
+                                                   queue:[NSOperationQueue mainQueue]
+                                                   block:^(NSNotification *note, id observer)
+     {
+         NSLog(@"notification %@ observer %@", note, observer);
+     }];
 
 }
 - (IBAction)unobserveMemoryWarningNotificationButtonAction:(id)sender
 {
     UIApplication *application = [UIApplication sharedApplication];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:application];
+
+    [self.notificationController unobserveNotificationName:UIApplicationDidReceiveMemoryWarningNotification object:application];
 
 }
 

@@ -20,4 +20,19 @@ self.notificationController = [FTGNotificationController controllerWithObserver:
     }];
 ```
 - To automatically remove observers on observer dealloc, declare FTGNotificationController as strong property
-- Unlike KVOController, this allows duplication just like NSNotificationCenter does
+- Do not use self inside block as it causes retain cycle. Declare weak self or use observer parameter (declared as weak for you)
+
+Installation
+--
+There are 2 ways
+- Drag FTGNotificationController.h and .FTGNotificationController.m files to your project
+- Using Cocoapods
+
+Testing
+--
+- Use Kiwi/XCTest
+
+Reference
+--
+1. [NSNotificationCenter with blocks considered harmful](http://sealedabstract.com/code/nsnotificationcenter-with-blocks-considered-harmful/)
+

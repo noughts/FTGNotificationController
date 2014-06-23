@@ -147,146 +147,15 @@
 
 @end
 
-#pragma mark - FTGNotificationSharedController
-
-/**
- @abstract The shared KVO controller instance.
- @discussion Acts as a receptionist, receiving and forwarding KVO notifications.
- */
-@interface FTGNotificationSharedController : NSObject
-
-/** A shared instance that never deallocates. */
-+ (instancetype)sharedController;
-
-/** observe notification info */
-- (void)observeNotificationInfo:(FTGNotificationInfo *)info;
-
-/** unobserve notification info */
-- (void)unobserveNotificationInfo:(FTGNotificationInfo *)info;
-
-@end
-
-@implementation FTGNotificationSharedController
-{
-    NSMutableArray *_sharedInfos;
-    OSSpinLock _sharedLock;
-}
-
-+ (instancetype)sharedController
-{
-    static FTGNotificationSharedController *_controller = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _controller = [[FTGNotificationSharedController alloc] init];
-    });
-    return _controller;
-}
-
-- (instancetype)init
-{
-    self = [super init];
-    if (nil != self) {
-        _sharedInfos = [NSMutableArray array];
-        _sharedLock = OS_SPINLOCK_INIT;
-    }
-    return self;
-}
-
-- (NSString *)debugDescription
-{
-    NSMutableString *s = [NSMutableString stringWithFormat:@"<%@:%p>\n", NSStringFromClass([self class]), self];
-
-    [s appendFormat:@"notification infos: \n%@\n", _sharedInfos];
-
-    return s;
-}
-
-- (void)observeNotificationInfo:(FTGNotificationInfo *)info
-{
-    if (nil == info) {
-        return;
-    }
-
-    // register info
-    OSSpinLockLock(&_sharedLock);
-
-    [_sharedInfos addObject:info];
-
-    OSSpinLockUnlock(&_sharedLock);
-
-    // add observer
-    [[NSNotificationCenter defaultCenter] addObserver:info
-                                             selector:@selector(handleNotification:)
-                                                 name:info->_notificationName
-                                               object:info->_object];
-}
-
-- (void)unobserveNotificationInfo:(FTGNotificationInfo *)info
-{
-    if (nil == info) {
-        return;
-    }
-
-    FTGNotificationInfo *registeredInfo = [self hasNotificationInfo:info];
-    if (registeredInfo) {
-        // unregister info
-        OSSpinLockLock(&_sharedLock);
-
-        [_sharedInfos removeObject:registeredInfo];
-
-        OSSpinLockUnlock(&_sharedLock);
-
-        // remove observer
-        [[NSNotificationCenter defaultCenter] removeObserver:registeredInfo
-                                                        name:registeredInfo->_notificationName
-                                                      object:registeredInfo->_object];
-    }
-}
-
-- (void)unobserveNotificationInfosForController:(FTGNotificationController *)controller
-{
-    NSArray *notificationInfosForController = [self notificationInfosForController:controller];
-    for (FTGNotificationInfo *info in notificationInfosForController) {
-        [self unobserveNotificationInfo:info];
-    }
-}
-
-#pragma mark - Helper
-
-- (NSArray *)notificationInfosForController:(FTGNotificationController *)controller
-{
-    OSSpinLockLock(&_sharedLock);
-
-    NSMutableArray *notificationInfos = [NSMutableArray array];
-    for (FTGNotificationInfo *info in _sharedInfos) {
-        if ([info->_controller isEqual:controller]) {
-            [notificationInfos addObject:info];
-        }
-    }
-
-    OSSpinLockUnlock(&_sharedLock);
-
-    return [NSArray arrayWithArray:notificationInfos];
-}
-
-- (FTGNotificationInfo *)hasNotificationInfo:(FTGNotificationInfo *)anInfo
-{
-    OSSpinLockLock(&_sharedLock);
-
-    for (FTGNotificationInfo *info in _sharedInfos) {
-        if ([info match:anInfo]) {
-            OSSpinLockUnlock(&_sharedLock);
-            return info;
-        }
-    }
-
-    OSSpinLockUnlock(&_sharedLock);
-    return nil;
-}
-
-@end
 
 #pragma mark - FTGNotificationController
+@interface FTGNotificationController ()
+{
+    NSMutableArray *_infos;
+    OSSpinLock _lock;
+}
+
+@end
 
 @implementation FTGNotificationController
 
@@ -302,6 +171,8 @@
     self = [super init];
     if (nil != self) {
         _observer = observer;
+        _infos = [NSMutableArray array];
+        _lock = OS_SPINLOCK_INIT;
     }
 
     return self;
@@ -318,30 +189,74 @@
 
     [s appendFormat:@"observer: <%@:%p>\n", NSStringFromClass([_observer class]), _observer];
 
-    [s appendFormat:@"notification infos: \n%@", [self _notificationInfos]];
+    [s appendFormat:@"notification infos: \n%@", _infos];
 
     return s;
 }
 
-#pragma mark - Utilities
-- (void)submitNotificationInfoToObserve:(FTGNotificationInfo *)info
+#pragma mark - Helper
+- (void)handleObserve:(FTGNotificationInfo *)info
 {
-    [[FTGNotificationSharedController sharedController] observeNotificationInfo:info];
+    if (nil == info) {
+        return;
+    }
+
+    // register info
+    OSSpinLockLock(&_lock);
+
+    [_infos addObject:info];
+
+    OSSpinLockUnlock(&_lock);
+
+    // add observer
+    [[NSNotificationCenter defaultCenter] addObserver:info
+                                             selector:@selector(handleNotification:)
+                                                 name:info->_notificationName
+                                               object:info->_object];
 }
 
-- (void)submitNotificationInfoToUnobserve:(FTGNotificationInfo *)info
+- (void)handleUnobserve:(FTGNotificationInfo *)info
 {
-    [[FTGNotificationSharedController sharedController] unobserveNotificationInfo:info];
+    if (nil == info) {
+        return;
+    }
+
+    FTGNotificationInfo *registeredInfo = [self hasNotificationInfo:info];
+    if (registeredInfo) {
+        // unregister info
+        OSSpinLockLock(&_lock);
+
+        [_infos removeObject:registeredInfo];
+
+        OSSpinLockUnlock(&_lock);
+
+        // remove observer
+        [[NSNotificationCenter defaultCenter] removeObserver:registeredInfo
+                                                        name:registeredInfo->_notificationName
+                                                      object:registeredInfo->_object];
+    }
 }
 
-- (void)submitAllToUnobserve
+- (void)handleUnobserveAll
 {
-    [[FTGNotificationSharedController sharedController] unobserveNotificationInfosForController:self];
+    for (FTGNotificationInfo *info in _infos) {
+        [self handleUnobserve:info];
+    }
 }
 
-- (NSArray *)_notificationInfos
+- (FTGNotificationInfo *)hasNotificationInfo:(FTGNotificationInfo *)anInfo
 {
-    return [[FTGNotificationSharedController sharedController] notificationInfosForController:self];
+    OSSpinLockLock(&_lock);
+
+    for (FTGNotificationInfo *info in _infos) {
+        if ([info match:anInfo]) {
+            OSSpinLockUnlock(&_lock);
+            return info;
+        }
+    }
+
+    OSSpinLockUnlock(&_lock);
+    return nil;
 }
 
 #pragma mark - API
@@ -363,7 +278,7 @@
                                                                           queue:queue
                                                                           block:block];
     // observe notification with info
-    [self submitNotificationInfoToObserve:info];
+    [self handleObserve:info];
 }
 
 - (void)observeNotificationNames:(NSArray *)notificationNames
@@ -402,7 +317,7 @@
                                                                          action:action];
 
     // observe notification with info
-    [self submitNotificationInfoToObserve:info];
+    [self handleObserve:info];
 }
 
 - (void)observeNotificationNames:(NSArray *)notificationNames
@@ -431,12 +346,12 @@
                                                                notificationName:notificationName
                                                                          object:object];
     // unobserve notification
-    [self submitNotificationInfoToUnobserve:info];
+    [self handleUnobserve:info];
 }
 
 - (void)unobserveAll
 {
-    [self submitAllToUnobserve];
+    [self handleUnobserveAll];
 }
 
 @end

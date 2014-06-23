@@ -15,7 +15,7 @@ static NSString *const kNotificationName2 = @"kNotificationName2";
 
 @interface FTGNotificationController (FTGNotificationControllerDemoTests)
 
-- (NSArray *)_notificationInfos;
+- (NSArray *)infos;
 
 @end
 
@@ -49,15 +49,11 @@ describe(@"FTGNotificationControllerDemoTests", ^{
                                   action:@selector(handleNotification:)];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
+        it(@"notification controller should have 2 notification info", ^{
+            [[[sut valueForKey:@"infos"] should] haveCountOf:2];
         });
 
-        it(@"notification controller should have 1 notification info", ^{
-            [[[sut _notificationInfos] should] haveCountOf:2];
-        });
-
-        it(@"observer should receive action once", ^{
+        it(@"observer should receive action twice", ^{
             [[testObserver should] receive:@selector(handleNotification:) withCount:2];
 
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationName1
@@ -77,17 +73,13 @@ describe(@"FTGNotificationControllerDemoTests", ^{
                                   action:@selector(handleNotification:)];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
-        });
-
         it(@"notification controller should have 1 notification info", ^{
-            [[[sut _notificationInfos] should] haveCountOf:1];
+            [[[sut valueForKey:@"infos"] should] haveCountOf:1];
         });
 
         it(@"observer correctly unobserve", ^{
             [sut unobserveNotificationName:kNotificationName1 object:nil];
-            [[[sut _notificationInfos] should] haveCountOf:0];
+            [[[sut valueForKey:@"infos"] should] haveCountOf:0];
 
             [[testObserver shouldNot] receive:@selector(handleNotification:)];
 
@@ -113,17 +105,13 @@ describe(@"FTGNotificationControllerDemoTests", ^{
                                   action:@selector(handleNotification:)];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
-        });
-
         it(@"notification controller should have 1 notification info", ^{
-            [[[sut _notificationInfos] should] haveCountOf:2];
+            [[[sut valueForKey:@"infos"] should] haveCountOf:2];
         });
 
         it(@"observer correctly unobserve", ^{
             [sut unobserveNotificationName:kNotificationName1 object:nil];
-            [[[sut _notificationInfos] should] haveCountOf:1];
+            [[[sut valueForKey:@"infos"] should] haveCountOf:1];
 
             [[testObserver should] receive:@selector(handleNotification:) withCount:1];
 
@@ -144,12 +132,8 @@ describe(@"FTGNotificationControllerDemoTests", ^{
                                   action:@selector(handleNotification:)];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
-        });
-
         it(@"notification controller should have 1 notification info", ^{
-            [[[sut _notificationInfos] should] haveCountOf:1];
+            [[[sut valueForKey:@"infos"] should] haveCountOf:1];
         });
 
         it(@"observer should receive action", ^{
@@ -177,12 +161,8 @@ describe(@"FTGNotificationControllerDemoTests", ^{
                                   action:@selector(handleNotification:)];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
-        });
-
         it(@"notification controller should have 2 notification infos", ^{
-            [[[sut _notificationInfos] should] haveCountOf:2];
+            [[[sut valueForKey:@"infos"] should] haveCountOf:2];
         });
 
         it(@"observer should receive action twice", ^{
@@ -218,12 +198,8 @@ describe(@"FTGNotificationControllerDemoTests", ^{
             }];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
-        });
-
         it(@"notification controller should have 1 notification info", ^{
-            [[[sut _notificationInfos] should] haveCountOf:1];
+            [[[sut valueForKey:@"infos"] should] haveCountOf:1];
         });
 
         it(@"observer should have block called", ^{
@@ -253,10 +229,6 @@ describe(@"FTGNotificationControllerDemoTests", ^{
             [sut observeNotificationName:kNotificationName1
                                   object:object
                                   action:@selector(handleNotification:)];
-        });
-
-        afterAll(^{
-            [sut unobserveAll];
         });
 
         it(@"observer should receive action", ^{
@@ -294,10 +266,6 @@ describe(@"FTGNotificationControllerDemoTests", ^{
                                   action:@selector(handleNotification:)];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
-        });
-
         it(@"observer should receive action once if specifying object 1", ^{
             [[testObserver should] receive:@selector(handleNotification:) withCount:1];
 
@@ -333,10 +301,6 @@ describe(@"FTGNotificationControllerDemoTests", ^{
                                   action:@selector(handleNotification:)];
         });
 
-        afterAll(^{
-            [sut unobserveAll];
-        });
-
         it(@"observer should receive action once if specifying nil object", ^{
             [[testObserver should] receive:@selector(handleNotification:) withCount:1];
 
@@ -365,10 +329,6 @@ describe(@"FTGNotificationControllerDemoTests", ^{
             //[[sut shouldEventually] receive:@selector(unobserveAll)];
 
             sut = nil;
-        });
-
-        afterAll(^{
-            [sut unobserveAll];
         });
     });
 });
