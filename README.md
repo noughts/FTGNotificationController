@@ -27,6 +27,14 @@ Installation
 There are 2 ways
 - Drag FTGNotificationController.h and .FTGNotificationController.m files to your project
 - Using Cocoapods
+```
+  pod 'FTGNotificationController'
+```
+or 
+```
+pod 'FTGNotificationController', :git => 'https://github.com/onmyway133/FTGNotificationController.git'
+```
+
 
 Testing
 --
