@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>F69164A6-3284-429B-A958-EE1B2C40263A</string>
+	<key>IDESourceControlProjectName</key>
+	<string>FTGNotificationControllerDemo</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>E4CE59E0-E0A8-48B1-A4EB-9C78426E147D</key>
+		<string>https://github.com/onmyway133/FTGNotificationController</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>FTGNotificationControllerDemo/FTGNotificationControllerDemo.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>E4CE59E0-E0A8-48B1-A4EB-9C78426E147D</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/onmyway133/FTGNotificationController</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>E4CE59E0-E0A8-48B1-A4EB-9C78426E147D</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>E4CE59E0-E0A8-48B1-A4EB-9C78426E147D</string>
+			<key>IDESourceControlWCCName</key>
+			<string>FTGNotificationController</string>
+		</dict>
+	</array>
+</dict>
+</plist>
